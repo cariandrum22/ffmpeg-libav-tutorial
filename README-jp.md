@@ -19,8 +19,8 @@ FFmpeg libavには[python](https://pyav.org/)や[go](https://github.com/imkira/g
 __目次__
 
 * [導入](#導入)
-  * [ビデオ - あなたが見ているもの!](#ビデオ---あなたが見ているもの!)
-  * [オーディオ - あなたが聞いているもの!](#オーディオ---あなたが聞いているもの!)
+  * [ビデオ - あなたが見ているもの！](#ビデオ---あなたが見ているもの)
+  * [オーディオ - あなたが聞いているもの！](#オーディオ---あなたが聞いているもの)
   * [コーデック - データの圧縮](#コーデック---データの圧縮)
   * [コンテナ -　オーディオとビデオのための快適な場所](#コンテナ---オーディオとビデオのための快適な場所)
 * [FFmpeg - コマンドライン](#FFmpeg---コマンドライン)
@@ -81,7 +81,7 @@ required_storage = tis * fps * toppf * cpp
 
 This video would require approximately `250.28GB` of storage or `1.19 Gbps` of bandwidth! That's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
-## コンテナ -　オーディオとビデオのための快適な場所
+## コンテナ - オーディオとビデオのための快適な場所
 
 > A container or wrapper format is a metafile format whose specification describes how different elements of data and metadata coexist in a computer file.
 > https://en.wikipedia.org/wiki/Digital_container_format
@@ -304,7 +304,7 @@ The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk
 
 Since some people were [facing issues while compiling or running the examples](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **we're going to use [`Docker`](https://docs.docker.com/install/) as our development/runner environment,** we'll also use the big buck bunny video so if you don't have it locally just run the command `make fetch_small_bunny_video`.
 
-### 第1章 - タイミング
+### 第1章 - オーディオとビデオの同期
 
 > #### TLDR; show me the [code](/0_hello_world.c) and execution.
 > ```bash
@@ -712,7 +712,7 @@ As you can see it has a single `mdat` atom/box, **this is place where the video 
 
 ![fragmented mp4 boxes](/img/boxes_fragmente_mp4.png)
 
-## Chapter 3 - transcoding
+## 第3章 - トランスコーディング
 
 > #### TLDR; show me the [code](/3_transcoding.c) and execution.
 > ```bash
