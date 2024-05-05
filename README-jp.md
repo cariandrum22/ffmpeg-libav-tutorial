@@ -5,47 +5,43 @@
 [🇧🇷](/README-pt.md "Portuguese")
 [🇯🇵](/README-jp.md "Japanese")
 
-40:15
-
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 
 [FFmpeg](https://www.ffmpeg.org/)をライブラリ(libav)として使い始める方法を教えてくれるチュートリアル/本を探していたところ，["1,000行以内でビデオプレーヤーを書く方法"](http://dranger.com/ffmpeg/)チュートリアルを見つけました。残念ながらこのチュートリアルは非推奨となっていたため，私はこれを書くことにしました．
 
 ここで書かれているコードのほとんどはC言語ですが**心配しないでください**: 理解するのは簡単ですし，それを好きな言語に適用することができます．
-FFmpeg libavには[python](https://pyav.org/)や[go](https://github.com/imkira/go-libav)のように多くの言語のためのバインディングがありますし，たとえあなたの言語にバインディングがなくても，`ffi`を通してサポートすることができます(ここに[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)の例があります)。
+FFmpeg libavには[python](https://pyav.org/)や[go](https://github.com/imkira/go-libav)のように多くの言語のためのバインディングがありますし，たとえあなたの言語にバインディングがなくても，`ffi`を通してサポートすることができます(ここに[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)の例があります)．
 
-We'll start with a quick lesson about what is video, audio, codec and container and then we'll go to a crash course on how to use `FFmpeg` command line and finally we'll write code, feel free to skip directly to[ ](http://newmediarockstars.com/wp-content/uploads/2015/11/nintendo-direct-iwata.jpg)the section [Learn FFmpeg libav the Hard Way.](#learn-ffmpeg-libav-the-hard-way)
+まずはビデオ，オーディオ，コーデックおよびコンテナとはなにかという簡単なレッスンから初めて， `FFmpeg` コマンドラインの使い方を特訓し，最後にコードを書きます．[FFmpeg libavを苦労して学ぶ](#FFmpeg-libavを苦労して学ぶ)は取り組まなくても構いません．
 
-まずはビデオ，オーディオ，コーデックおよびコンテナとはなにか無いついて簡単に，
+インターネットビデオストリーミングは伝統的なテレビの未来であると言う人もいますが，いずれにせよ，FFmpegは学ぶ価値のあるものです．
 
-Some people used to say that the Internet video streaming is the future of the traditional TV, in any case, the FFmpeg is something that is worth studying.
+__目次__
 
-__Table of Contents__
+* [導入](#導入)
+  * [ビデオ - あなたが見ているもの!](#ビデオ---あなたが見ているもの!)
+  * [オーディオ - あなたが聞いているもの!](#オーディオ---あなたが聞いているもの!)
+  * [コーデック - データの圧縮](#コーデック---データの圧縮)
+  * [コンテナ -　オーディオとビデオのための快適な場所](#コンテナ---オーディオとビデオのための快適な場所)
+* [FFmpeg - コマンドライン](#FFmpeg---コマンドライン)
+  * [FFmpeg コマンドラインツール 101](#FFmpeg-コマンドラインツール-101)
+* [一般的なビデオ操作](#一般的なビデオ操作)
+  * [トランスコーディング](#トランスコーディング)
+  * [トランスマクシング](#トランスマクシング)
+  * [トランスレーティング](#トランスレーティング)
+  * [トランスサイジング](#トランスサイジング)
+  * [ボーナスラウンド: アダプティブストリーミング](#ボーナスラウンド-アダプティブストリーミング)
+  * [その先へ](#その先へ)
+* [FFmpeg libavを苦労して学ぶ](#FFmpeg-libavを苦労して学ぶ)
+  * [第0章 - 悪性高きhello world](#第0章---悪性高きhello-world)
+    * [FFmpeg libav アーキテクチャ](#FFmpeg-libav-アーキテクチャ)
+  * [第1章 - タイミング](#第1章---オーディオとビデオの同期)
+  * [第2章 - リマクシング](#第2章---リマクシング)
+  * [第3章 - トランスコーディング](#第3章---トランスコーディング)
 
-* [Intro](#intro)
-  * [video - what you see!](#video---what-you-see)
-  * [audio - what you listen!](#audio---what-you-listen)
-  * [codec - shrinking data](#codec---shrinking-data)
-  * [container - a comfy place for audio and video](#container---a-comfy-place-for-audio-and-video)
-* [FFmpeg - command line](#ffmpeg---command-line)
-  * [FFmpeg command line tool 101](#ffmpeg-command-line-tool-101)
-* [Common video operations](#common-video-operations)
-  * [Transcoding](#transcoding)
-  * [Transmuxing](#transmuxing)
-  * [Transrating](#transrating)
-  * [Transsizing](#transsizing)
-  * [Bonus Round: Adaptive Streaming](#bonus-round-adaptive-streaming)
-  * [Going beyond](#going-beyond)
-* [Learn FFmpeg libav the Hard Way](#learn-ffmpeg-libav-the-hard-way)
-  * [Chapter 0 - The infamous hello world](#chapter-0---the-infamous-hello-world)
-    * [FFmpeg libav architecture](#ffmpeg-libav-architecture)
-  * [Chapter 1 - timing](#chapter-1---syncing-audio-and-video)
-  * [Chapter 2 - remuxing](#chapter-2---remuxing)
-  * [Chapter 3 - transcoding](#chapter-3---transcoding)
+# 導入
 
-# Intro
-
-## video - what you see!
+## ビデオ - あなたが見ているもの!
 
 If you have a sequence series of images and change them at a given frequency (let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision).
 In summary this is the very basic idea behind a video: **a series of pictures / frames running at a given rate**.
@@ -54,7 +50,7 @@ In summary this is the very basic idea behind a video: **a series of pictures / 
 
 Zeitgenössische Illustration (1886)
 
-## audio - what you listen!
+## オーディオ - あなたが聞いているもの!
 
 Although a muted video can express a variety of feelings, adding sound to it brings more pleasure to the experience.
 
@@ -65,7 +61,7 @@ Sound is the vibration that propagates as a wave of pressure, through the air or
 ![audio analog to digital](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
 >[Source](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
 
-## codec - shrinking data
+## コーデック - データの圧縮
 
 > CODEC is an electronic circuit or software that **compresses or decompresses digital audio/video.** It converts raw (uncompressed) digital audio/video to a compressed format or vice versa.
 > https://en.wikipedia.org/wiki/Video_codec
@@ -85,7 +81,7 @@ required_storage = tis * fps * toppf * cpp
 
 This video would require approximately `250.28GB` of storage or `1.19 Gbps` of bandwidth! That's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
 
-## container - a comfy place for audio and video
+## コンテナ -　オーディオとビデオのための快適な場所
 
 > A container or wrapper format is a metafile format whose specification describes how different elements of data and metadata coexist in a computer file.
 > https://en.wikipedia.org/wiki/Digital_container_format
@@ -96,7 +92,7 @@ Usually we can infer the format of a file by looking at its extension: for insta
 
 ![container](/img/container.png)
 
-# FFmpeg - command line
+# FFmpeg - コマンドライン
 
 > A complete, cross-platform solution to record, convert and stream audio and video.
 
@@ -112,7 +108,7 @@ $ ffmpeg -i input.mp4 output.avi
 We just made a **remuxing** here, which is converting from one container to another one.
 Technically FFmpeg could also be doing a transcoding but we'll talk about that later.
 
-## FFmpeg command line tool 101
+## FFmpeg コマンドラインツール 101
 
 FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that does a great job of explaining how it works.
 
@@ -151,11 +147,11 @@ For instance when you just type `ffmpeg -i input.avi output.mp4` what audio/vide
 
 Werner Robitza wrote a must read/execute [tutorial about encoding and editing with FFmpeg](http://slhck.info/ffmpeg-encoding-course/#/).
 
-# Common video operations
+# 一般的なビデオ操作
 
 While working with audio/video we usually do a set of tasks with the media.
 
-## Transcoding
+## トランスコーディング
 
 ![transcoding](/img/transcoding.png)
 
@@ -171,7 +167,7 @@ $ ffmpeg \
 bunny_1080p_60fps_h265.mp4
 ```
 
-## Transmuxing
+## トランスマクシング
 
 ![transmuxing](/img/transmuxing.png)
 
@@ -187,7 +183,7 @@ $ ffmpeg \
 bunny_1080p_60fps.ts
 ```
 
-## Transrating
+## トランスレーティング
 
 ![transrating](/img/transrating.png)
 
@@ -205,7 +201,7 @@ bunny_1080p_60fps_transrating_964_3856.mp4
 
 Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate control](http://slhck.info/posts/).
 
-## Transsizing
+## トランスサイジング
 
 ![transsizing](/img/transsizing.png)
 
@@ -221,7 +217,7 @@ $ ffmpeg \
 bunny_1080p_60fps_transsizing_480.mp4
 ```
 
-## Bonus Round: Adaptive Streaming
+## ボーナスラウンド: アダプティブストリーミング
 
 ![adaptive streaming](/img/adaptive-streaming.png)
 
@@ -261,12 +257,12 @@ $ ffmpeg \
 
 PS: I stole this example from the [Instructions to playback Adaptive WebM using DASH](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)
 
-## Going beyond
+## その先へ
 
 There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly).
 I use it in conjunction with *iMovie* to produce/edit some videos for YouTube and you can certainly use it professionally.
 
-# Learn FFmpeg libav the Hard Way
+# FFmpeg libavを苦労して学ぶ
 
 > Don't you wonder sometimes 'bout sound and vision?
 > **David Robert Jones**
@@ -278,11 +274,11 @@ Usually, when you install FFmpeg, it installs automatically all these libraries.
 
 > This title is a homage to Zed Shaw's series [Learn X the Hard Way](https://learncodethehardway.org/), particularly his book Learn C the Hard Way.
 
-## Chapter 0 - The infamous hello world
+## 第0章 - 悪性高きhello world
 This hello world actually won't show the message `"hello world"` in the terminal :tongue:
 Instead we're going to **print out information about the video**, things like its format (container), duration, resolution, audio channels and, in the end, we'll **decode some frames and save them as image files**.
 
-### FFmpeg libav architecture
+### FFmpeg libav アーキテクチャ
 
 But before we start to code, let's learn how **FFmpeg libav architecture** works and how its components communicate with others.
 
@@ -308,7 +304,7 @@ The `AVCodec` will decode them into [`AVFrame`](https://ffmpeg.org/doxygen/trunk
 
 Since some people were [facing issues while compiling or running the examples](https://github.com/leandromoreira/ffmpeg-libav-tutorial/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+compiling) **we're going to use [`Docker`](https://docs.docker.com/install/) as our development/runner environment,** we'll also use the big buck bunny video so if you don't have it locally just run the command `make fetch_small_bunny_video`.
 
-### Chapter 0 - code walkthrough
+### 第1章 - タイミング
 
 > #### TLDR; show me the [code](/0_hello_world.c) and execution.
 > ```bash
@@ -518,7 +514,7 @@ LOG: Frame 5 (type=B, size=6253 bytes) pts 10000 key_frame 0 [DTS 5]
 LOG: Frame 6 (type=P, size=34992 bytes) pts 11000 key_frame 0 [DTS 1]
 ```
 
-## Chapter 2 - remuxing
+## 第2章 - リマクシング
 
 Remuxing is the act of changing from one format (container) to another, for instance, we can change a [MPEG-4](https://en.wikipedia.org/wiki/MPEG-4_Part_14) video to a [MPEG-TS](https://en.wikipedia.org/wiki/MPEG_transport_stream) one without much pain using FFmpeg:
 
