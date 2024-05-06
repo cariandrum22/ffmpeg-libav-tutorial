@@ -29,6 +29,7 @@ __目次__
   * [トランスコーディング](#トランスコーディング)
   * [トランスマクシング](#トランスマクシング)
   * [トランスレーティング](#トランスレーティング)
+
   * [トランスサイジング](#トランスサイジング)
   * [ボーナスラウンド: アダプティブストリーミング](#ボーナスラウンド-アダプティブストリーミング)
   * [その先へ](#その先へ)
@@ -94,58 +95,59 @@ required_storage = tis * fps * toppf * cpp
 
 # FFmpeg - コマンドライン
 
-> A complete, cross-platform solution to record, convert and stream audio and video.
+> オーディオとビデオを記録，変換，ストリーミングするための完全なクロスプラットフォームソリューションです．
 
-To work with multimedia we can use the AMAZING tool/library called [FFmpeg](https://www.ffmpeg.org/). Chances are you already know/use it directly or indirectly (do you use [Chrome?](https://www.chromium.org/developers/design-documents/video)).
+マルチメディアを扱うために，FFmpegと呼ばれる素晴らしいツール/ライブラリを使用することができます．あなたはすでに，直接的にあるいは間接的に知っている/使っている可能性があります（[Chrome](https://www.chromium.org/developers/design-documents/video)をつかっていますか？）．
 
-It has a command line program called `ffmpeg`, a very simple yet powerful binary.
-For instance, you can convert from `mp4` to the container `avi` just by typing the follow command:
+これには`ffmpeg`と呼ばれるコマンドラインプログラムがあり，非常にシンプルかつ強力なバイナリです．
+例えば，次のコマンドを入力するだけで`mp4`から`avi`コンテナに変換することができます:
 
 ```bash
 $ ffmpeg -i input.mp4 output.avi
 ```
 
-We just made a **remuxing** here, which is converting from one container to another one.
-Technically FFmpeg could also be doing a transcoding but we'll talk about that later.
+ここではあるコンテナから別のコンテナに変換をする**リマクシング**を行っただけです．
+技術的には，FFmpegはトランスコーディングも行うことができますが，それについては後ほど説明します．
 
 ## FFmpeg コマンドラインツール 101
 
-FFmpeg does have a [documentation](https://www.ffmpeg.org/ffmpeg.html) that does a great job of explaining how it works.
+FFmpegには，それがどのように動作するのかを説明した素晴らしい[ドキュメント](https://www.ffmpeg.org/ffmpeg.html)があります．
 
 ```bash
-# you can also look for the documentation using the command line
+# コマンドラインを使用してドキュメントを検索することもできます
 
 ffmpeg -h full | grep -A 10 -B 10 avoid_negative_ts
 ```
 
-To make things short, the FFmpeg command line program expects the following argument format to perform its actions `ffmpeg {1} {2} -i {3} {4} {5}`, where:
+掻い摘んで言うと，FFmpegコマンドラインプログラムは次のような引数フォーマットで動作することを期待しています `ffmpeg {1} {2} -i {3} {4} {5}`，これらは:
 
-1. global options
-2. input file options
-3. input url
-4. output file options
-5. output url
+1. グローバルオプション
+2. 入力ファイルオプション
+3. 入力URL
+4. 出力ファイルオプション
+5. 出力URL
 
-The parts 2, 3, 4 and 5 can be as many as you need.
-It's easier to understand this argument format in action:
+となっており，2，3，4と5の部分は必要なだけ書くことができます．
+このフォーマットは実際に使ってみるとわかりやすいでしょう:
 
 ``` bash
-# WARNING: this file is around 300MB
+# 警告: このファイルは約300MBあります
 $ wget -O bunny_1080p_60fps.mp4 http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_normal.mp4
 
 $ ffmpeg \
--y \ # global options
--c:a libfdk_aac \ # input options
--i bunny_1080p_60fps.mp4 \ # input url
--c:v libvpx-vp9 -c:a libvorbis \ # output options
-bunny_1080p_60fps_vp9.webm # output url
+-y \ # グローバルオプション
+-c:a libfdk_aac \ # 入力オプション
+-i bunny_1080p_60fps.mp4 \ # 入力URL
+-c:v libvpx-vp9 -c:a libvorbis \ # 出力オプション
+bunny_1080p_60fps_vp9.webm # 出力URL
 ```
-This command takes an input file `mp4` containing two streams (an audio encoded with `aac` CODEC and a video encoded using `h264` CODEC) and convert it to `webm`, changing its audio and video CODECs too.
 
-We could simplify the command above but then be aware that FFmpeg will adopt or guess the default values for you.
-For instance when you just type `ffmpeg -i input.avi output.mp4` what audio/video CODEC does it use to produce the `output.mp4`?
+このコマンドは，2つのストリーム（`aac`コーデックでエンコードされたオーディオと`h264`コーデックでエンコードされたビデオ）を含む`mp4`を入力ファイルとして取り，オーディオとビデオのコーデックも変更しながら`webm`に変換します．
 
-Werner Robitza wrote a must read/execute [tutorial about encoding and editing with FFmpeg](http://slhck.info/ffmpeg-encoding-course/#/).
+上記のコマンドをシンプルにすることもできますが，その場合FFmpegはデフォルト値を採用または推測することに注意してください．
+例えば`ffmpeg -i input.avi output.mp4`と入力した場合，`output.mp4`を生成するためにどのようなオーディオ/ビデオコーデックが使われるでしょうか？
+
+Werner Robitzaが必読/実行すべき[FFmpegによるエンコードと編集についてのチュートリアル](http://slhck.info/ffmpeg-encoding-course/#/)を書いています.
 
 # 一般的なビデオ操作
 
