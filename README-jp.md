@@ -12,7 +12,7 @@
 ここで書かれているコードのほとんどはC言語ですが**心配しないでください**: 理解するのは簡単ですし，それを好きな言語に適用することができます．
 FFmpeg libavには[python](https://pyav.org/)や[go](https://github.com/imkira/go-libav)のように多くの言語のためのバインディングがありますし，たとえあなたの言語にバインディングがなくても，`ffi`を通してサポートすることができます(ここに[Lua](https://github.com/daurnimator/ffmpeg-lua-ffi/blob/master/init.lua)の例があります)．
 
-まずはビデオ，オーディオ，コーデックおよびコンテナとはなにかという簡単なレッスンから初めて， `FFmpeg` コマンドラインの使い方を特訓し，最後にコードを書きます．[FFmpeg libavを苦労して学ぶ](#FFmpeg-libavを苦労して学ぶ)は取り組まなくても構いません．
+まずはビデオ，オーディオ，コーデックおよびコンテナとはなにかという簡単なレッスンから初めて，`FFmpeg`コマンドラインの使い方を特訓し，最後にコードを書きます．（訳注: FFmpegのCommand Line Toolsや一般的なビデオ操作の概念について既知であれば）いつでも[FFmpeg libavを苦労して学ぶ](#FFmpeg-libavを苦労して学ぶ)に直接スキップしてください．
 
 インターネットビデオストリーミングは伝統的なテレビの未来であると言う人もいますが，いずれにせよ，FFmpegは学ぶ価値のあるものです．
 
@@ -41,54 +41,54 @@ __目次__
 
 # 導入
 
-## ビデオ - あなたが見ているもの!
+## ビデオ - あなたが見ているもの！
 
-If you have a sequence series of images and change them at a given frequency (let's say [24 images per second](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/)), you will create an [illusion of movement](https://en.wikipedia.org/wiki/Persistence_of_vision).
-In summary this is the very basic idea behind a video: **a series of pictures / frames running at a given rate**.
+一連の画像があり，それを一定の頻度(例えば [毎秒24枚の画像](https://www.filmindependent.org/blog/hacking-film-24-frames-per-second/))で変えた場合，[動きの錯覚](https://en.wikipedia.org/wiki/Persistence_of_vision)が生まれます．要約すると，これがビデオの基本的な考え方です: **一連の画像/フレームは，一定の速度で実行される**
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/1/1f/Linnet_kineograph_1886.jpg" title="flip book" height="280"></img>
 
-Zeitgenössische Illustration (1886)
+現在のイラスト (1886)
 
-## オーディオ - あなたが聞いているもの!
+## オーディオ - あなたが聞いているもの！
 
-Although a muted video can express a variety of feelings, adding sound to it brings more pleasure to the experience.
+ミュートされたビデオでも様々な感情を表現することができますが，音が加わるとより楽しくなります．
 
-Sound is the vibration that propagates as a wave of pressure, through the air or any other transmission medium, such as a gas, liquid or solid.
+音とは，空気や他の伝達媒体，液体，固体などを介して，圧力の波として伝搬する振動のことです．
 
-> In a digital audio system, a microphone converts sound to an analog electrical signal, then an analog-to-digital converter (ADC) — typically using [pulse-code modulation (PCM)](https://en.wikipedia.org/wiki/Pulse-code_modulation) - converts the analog signal into a digital signal.
+> デジタルオーディオシステムでは，マイクロフォンが音をアナログ電気信号に変換し，次にアナログデジタル変換器(ADC) - 通常は[パルス符号変調(PCM)](https://ja.wikipedia.org/wiki/%E3%83%91%E3%83%AB%E3%82%B9%E7%AC%A6%E5%8F%B7%E5%A4%89%E8%AA%BF) - がアナログ信号をデジタル信号に変換します．
+
 
 ![audio analog to digital](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/CPT-Sound-ADC-DAC.svg/640px-CPT-Sound-ADC-DAC.svg.png "audio analog to digital")
->[Source](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
+>[出典](https://commons.wikimedia.org/wiki/File:CPT-Sound-ADC-DAC.svg)
 
 ## コーデック - データの圧縮
 
-> CODEC is an electronic circuit or software that **compresses or decompresses digital audio/video.** It converts raw (uncompressed) digital audio/video to a compressed format or vice versa.
-> https://en.wikipedia.org/wiki/Video_codec
+> コーデックとは **デジタルオーディオ/ビデオを圧縮または解凍する** 電子回路またはソフトウェアです．生（非圧縮）のデジタルオーディオ/ビデオを圧縮形式に変換したり，またはその逆を行います．
+>[出典](https://en.wikipedia.org/wiki/Video_codec)
 
-But if we chose to pack millions of images in a single file and called it a movie, we might end up with a huge file. Let's do the math:
+しかし，何百万もの画像を一つのファイルに詰め込んだものをムービーと呼ぶすると，巨大なファイルになってしまうかもしれません．計算してみましょう:
 
-Suppose we are creating a video with a resolution of `1080 x 1920` (height x width) and that we'll spend `3 bytes` per pixel (the minimal point at a screen) to encode the color (or [24 bit color](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29), what gives us 16,777,216 different colors) and this video runs at `24 frames per second` and it is `30 minutes` long.
+`1080 x 1920`（高さ×幅）の解像度，ピクセル（画面の最小ポイント）あたり`3バイト`を使ってカラー（あるいは [24ビットカラー](https://en.wikipedia.org/wiki/Color_depth#True_color_.2824-bit.29)，16,777,216通りの色が得られる）をエンコードし，`1秒あたり24フレーム`で`30分`のビデオを作ると仮定します．
 
 ```c
-toppf = 1080 * 1920 //total_of_pixels_per_frame
-cpp = 3 //cost_per_pixel
-tis = 30 * 60 //time_in_seconds
-fps = 24 //frames_per_second
+toppf = 1080 * 1920 //total_of_pixels_per_frame: フレームあたりの総ピクセル数
+cpp = 3 //cost_per_pixel: ピクセルあたりのコスト
+tis = 30 * 60 //time_in_seconds: 秒単位の時間
+fps = 24 //frames_per_second: 秒あたりのフレーム数
 
 required_storage = tis * fps * toppf * cpp
 ```
 
-This video would require approximately `250.28GB` of storage or `1.19 Gbps` of bandwidth! That's why we need to use a [CODEC](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work).
+このビデオにはおおよそ`250.28GB`のストレージまたは`1.19 Gbps`の帯域幅が必要です！だから [コーデック](https://github.com/leandromoreira/digital_video_introduction#how-does-a-video-codec-work)を使う必要があるのです．
 
 ## コンテナ - オーディオとビデオのための快適な場所
 
-> A container or wrapper format is a metafile format whose specification describes how different elements of data and metadata coexist in a computer file.
-> https://en.wikipedia.org/wiki/Digital_container_format
+> コンテナまたはラッパーフォーマットとは，異なるデータ要素とメタデータがコンピュータファイルとしてどのように共存するかという仕様が記述されたメタファイルフォーマットです．
+> [出典](https://en.wikipedia.org/wiki/Digital_container_format)
 
-A **single file that contains all the streams** (mostly the audio and video) and it also provides **synchronization and general metadata**, such as title, resolution and etc.
+**全てのストリームを含む単一のファイル**（ほとんどの場合はオーディオとビデオ）と，タイトル，解像度やその他といった**同期と一般的なメタデータ**も提供します．
 
-Usually we can infer the format of a file by looking at its extension: for instance a `video.webm` is probably a video using the container [`webm`](https://www.webmproject.org/).
+通常，拡張子を見ることでファイルのフォーマットを推測することができます: 例えば，`video.webm`はおそらく[`webm`](https://www.webmproject.org/)コンテナを使用したビデオでしょう．
 
 ![container](/img/container.png)
 
