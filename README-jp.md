@@ -116,7 +116,7 @@ FFmpegには，それがどのように動作するのかを説明した素晴�
 ```bash
 # コマンドラインを使用してドキュメントを検索することもできます
 
-ffmpeg -h full | grep -A 10 -B 10 avoid_negative_ts
+$ ffmpeg -h full | grep -A 10 -B 10 avoid_negative_ts
 ```
 
 掻い摘んで言うと，FFmpegコマンドラインプログラムは次のような引数フォーマットで動作することを期待しています `ffmpeg {1} {2} -i {3} {4} {5}`，これらは:
@@ -147,21 +147,22 @@ bunny_1080p_60fps_vp9.webm # 出力URL
 上記のコマンドをシンプルにすることもできますが，その場合FFmpegはデフォルト値を採用または推測することに注意してください．
 例えば`ffmpeg -i input.avi output.mp4`と入力した場合，`output.mp4`を生成するためにどのようなオーディオ/ビデオコーデックが使われるでしょうか？
 
-Werner Robitzaが必読/実行すべき[FFmpegによるエンコードと編集についてのチュートリアル](http://slhck.info/ffmpeg-encoding-course/#/)を書いています.
+Werner Robitzaは必読/実行すべき[FFmpegによるエンコードと編集についてのチュートリアル](http://slhck.info/ffmpeg-encoding-course/#/)を書いています.
 
 # 一般的なビデオ操作
 
-While working with audio/video we usually do a set of tasks with the media.
+オーディオ/ビデオを操作するときは通常，メディアに対して一連の作業を行います．
 
 ## トランスコーディング
 
 ![transcoding](/img/transcoding.png)
 
-**What?** the act of converting one of the streams (audio or video) from one CODEC to another one.
+**これは何ですか？** あるコーデックから別のコーデックにストリーム（オーディオまたはビデオ）を変換することです．
 
-**Why?** sometimes some devices (TVs, smartphones, console and etc) doesn't support X but Y and newer CODECs provide better compression rate.
+**なぜ必要なのですか？** あるデバイス（テレビ，スマートフォン，ゲーム機やその他）はX（訳注: というコーデック）をサポートしていないことがありますが，Y（訳注: というコーデック）や新しいコーデックはより良い圧縮率を提供します．
 
-**How?** converting an `H264` (AVC) video to an `H265` (HEVC).
+**どうやって行いますか？** `H264`(AVC)ビデオを`H265`(HEVC)に変換します．
+
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -173,11 +174,12 @@ bunny_1080p_60fps_h265.mp4
 
 ![transmuxing](/img/transmuxing.png)
 
-**What?** the act of converting from one format (container) to another one.
+**これは何ですか？** あるフォーマット（コンテナ）から別のフォーマットに変換することです．
 
-**Why?** sometimes some devices (TVs, smartphones, console and etc) doesn't support X but Y and sometimes newer containers provide modern required features.
+**なぜ必要なのですか？** あるデバイス（テレビ，スマートフォン，ゲーム機やその他）はX（訳注: というコンテナ）をサポートしていないことがありますが，Y（訳注: というコンテナ）や新しいコンテナが最新の必要な機能を提供していることがあります．
 
-**How?** converting a `mp4` to a `ts`.
+**どうやって行いますか？** `mp4`を`ts`に変換します．
+
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -189,11 +191,12 @@ bunny_1080p_60fps.ts
 
 ![transrating](/img/transrating.png)
 
-**What?** the act of changing the bit rate, or producing other renditions.
+**これは何ですか？** ビットレートを変更すること，または他のレンディションを作成することです．
 
-**Why?** people will try to watch your video in a `2G` (edge) connection using a less powerful smartphone or in a `fiber` Internet connection on their 4K TVs therefore you should offer more than one rendition of the same video with different bit rate.
+**なぜ必要なのですか？** 人々はあなたのビデオを性能の低いスマートフォンを使用した`2G`（エッジ）接続や，4Kテレビの`ファイバー`インターネット接続で見ようとするので，同じビデオを異なるビットレートの複数レンディションを提供する必要があります．
 
-**How?** producing a rendition with bit rate between 3856K and 2000K.
+**どうやって行いますか？** ビットレートが3856K ~ 2000Kのレンディションを作製します．
+
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -201,17 +204,18 @@ $ ffmpeg \
 bunny_1080p_60fps_transrating_964_3856.mp4
 ```
 
-Usually we'll be using transrating with transsizing. Werner Robitza wrote another must read/execute [series of posts about FFmpeg rate control](http://slhck.info/posts/).
+通常，私達はトランスレーティングとトランスサイジングを併用します．Werner Robitzaは他にも必読/実行すべき[FFmpegのレート制御に関する一連の投稿](http://slhck.info/posts/)を書いています.
 
 ## トランスサイジング
 
 ![transsizing](/img/transsizing.png)
 
-**What?** the act of converting from one resolution to another one. As said before transsizing is often used with transrating.
+**これは何ですか？** ある解像度から別の解像度に変換することです．前述したとおり，トランスサイジングはトランスレートと併せてよく使用されます．
 
-**Why?** reasons are about the same as for the transrating.
+**なぜ必要なのですか？** トランスサイジングと同様の理由です．
 
-**How?** converting a `1080p` to a `480p` resolution.
+**どうやって行いますか？** `1080p`を`480p`の解像度に変換します．
+
 ```bash
 $ ffmpeg \
 -i bunny_1080p_60fps.mp4 \
@@ -223,13 +227,14 @@ bunny_1080p_60fps_transsizing_480.mp4
 
 ![adaptive streaming](/img/adaptive-streaming.png)
 
-**What?** the act of producing many resolutions (bit rates) and split the media into chunks and serve them via http.
+**これは何ですか？** 複数の解像度（ビットレート）を生成し，メディアをチャンクに分割してhttp経由で提供することです．
 
-**Why?** to provide a flexible media that can be watched on a low end smartphone or on a 4K TV, it's also easy to scale and deploy but it can add latency.
+**なぜ必要なのですか？** ローエンドスマートフォンや4Kテレビで視聴できる柔軟なメディアを提供するためです．スケールと展開が容易ですが，レイテンシが増加する可能性があります．
 
-**How?** creating an adaptive WebM using DASH.
+**どうやって行いますか？** DASHを使用したアダプティブWebMを作成します．
+
 ```bash
-# video streams
+# ビデオストリーム
 $ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 160x90 -b:v 250k -keyint_min 150 -g 150 -an -f webm -dash 1 video_160x90_250k.webm
 
 $ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 320x180 -b:v 500k -keyint_min 150 -g 150 -an -f webm -dash 1 video_320x180_500k.webm
@@ -240,10 +245,10 @@ $ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 640x360 -b:v 1000k -keyint_
 
 $ ffmpeg -i bunny_1080p_60fps.mp4 -c:v libvpx-vp9 -s 1280x720 -b:v 1500k -keyint_min 150 -g 150 -an -f webm -dash 1 video_1280x720_1500k.webm
 
-# audio streams
+# オーディオストリーム
 $ ffmpeg -i bunny_1080p_60fps.mp4 -c:a libvorbis -b:a 128k -vn -f webm -dash 1 audio_128k.webm
 
-# the DASH manifest
+# DASHマニフェスト
 $ ffmpeg \
  -f webm_dash_manifest -i video_160x90_250k.webm \
  -f webm_dash_manifest -i video_320x180_500k.webm \
@@ -257,12 +262,12 @@ $ ffmpeg \
  manifest.mpd
 ```
 
-PS: I stole this example from the [Instructions to playback Adaptive WebM using DASH](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)
+PS: この例は[DASHを使用したアダプティブWebMの再生手順](http://wiki.webmproject.org/adaptive-streaming/instructions-to-playback-adaptive-webm-using-dash)から借用しました
 
 ## その先へ
 
-There are [many and many other usages for FFmpeg](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly).
-I use it in conjunction with *iMovie* to produce/edit some videos for YouTube and you can certainly use it professionally.
+FFmpegの使い方は[他にもたくさん](https://github.com/leandromoreira/digital_video_introduction/blob/master/encoding_pratical_examples.md#split-and-merge-smoothly)あります．
+私はiMovieと組み合わせてYouTube用の動画を制作/編集していますが，よりプロフェッショナルな用途であっても間違いなく使うことができます．
 
 # FFmpeg libavを苦労して学ぶ
 
